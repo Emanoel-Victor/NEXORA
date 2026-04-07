@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle2, Zap, Sparkles, ShieldCheck } from 'lucide-react';
 import { PlanType, PLAN_LIMITS, storage } from '../lib/storage';
+import { cn } from '../lib/utils';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -29,10 +30,22 @@ export default function UpgradeModal({ isOpen, onClose, featureName, targetPlan 
     const user = storage.getUser();
     if (!user) return;
 
-    // Mock upgrade for now as requested to remove Perfect Pay
-    await storage.updateUserPlan(planId);
-    onClose();
-    window.location.reload();
+    const proUrl = import.meta.env.VITE_PERFECT_PAY_PRO_CHECKOUT_URL;
+    const premiumUrl = import.meta.env.VITE_PERFECT_PAY_PREMIUM_CHECKOUT_URL;
+
+    const checkoutUrl = planId === 'pro' ? proUrl : premiumUrl;
+
+    if (checkoutUrl) {
+      // Redirect to Perfect Pay with user ID as a parameter
+      const separator = checkoutUrl.includes('?') ? '&' : '?';
+      window.open(`${checkoutUrl}${separator}us_id=${user.id}`, '_blank');
+      onClose();
+    } else {
+      // Fallback to mock upgrade if no URL is configured
+      await storage.updateUserPlan(planId);
+      onClose();
+      window.location.reload();
+    }
   };
 
   return (
@@ -101,11 +114,14 @@ export default function UpgradeModal({ isOpen, onClose, featureName, targetPlan 
 
                     <button 
                       onClick={() => handleUpgrade(plan.id as PlanType)}
-                      className={`w-full py-4 rounded-2xl font-bold transition-all ${
-                        plan.id === 'pro' ? 'btn-primary' : 'bg-white text-background hover:bg-white/90'
-                      }`}
+                      className={cn(
+                        "w-full py-4 rounded-2xl font-bold transition-all shadow-lg",
+                        plan.id === 'pro' 
+                          ? "btn-primary shadow-brand-pink/20" 
+                          : "bg-transparent border-2 border-brand-gold text-brand-gold hover:bg-brand-gold/10 shadow-brand-gold/10"
+                      )}
                     >
-                      Fazer upgrade agora
+                      Assinar {plan.name}
                     </button>
                   </div>
                 ))}

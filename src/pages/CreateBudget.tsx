@@ -7,152 +7,6 @@ import { storage, Budget, BudgetItem, Client } from "../lib/storage";
 import { usePlan } from "../hooks/usePlan";
 import UpgradeModal from "../components/UpgradeModal";
 import CustomSelect from "../components/CustomSelect";
-import { getAISuggestion, AISuggestionResponse } from "../services/aiService";
-
-const AISuggestionModal = ({ 
-  isOpen, 
-  onClose, 
-  onApply, 
-  initialData 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  onApply: (suggestion: AISuggestionResponse) => void;
-  initialData: { descricao: string; preco: string; historico: string }
-}) => {
-  const [categoria, setCategoria] = useState("");
-  const [publico, setPublico] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [suggestion, setSuggestion] = useState<AISuggestionResponse | null>(null);
-
-  const handleGenerate = async () => {
-    if (!categoria || !publico) return;
-    setIsLoading(true);
-    try {
-      const result = await getAISuggestion({
-        ...initialData,
-        categoria,
-        publico
-      });
-      setSuggestion(result);
-    } catch (error) {
-      console.error("Error generating suggestion:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 space-y-6"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-pink/10 flex items-center justify-center text-brand-pink">
-              <Sparkles size={24} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Otimização com IA</h2>
-              <p className="text-sm text-text-secondary">Transforme seu orçamento em uma proposta persuasiva.</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-lg text-text-secondary">
-            <Plus size={24} className="rotate-45" />
-          </button>
-        </div>
-
-        {!suggestion ? (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-text-secondary uppercase">Categoria do Serviço</label>
-                <input 
-                  type="text" 
-                  value={categoria}
-                  onChange={(e) => setCategoria(e.target.value)}
-                  placeholder="Ex: Fotografia de Eventos, Consultoria Financeira..."
-                  className="input-field"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-text-secondary uppercase">Público-Alvo</label>
-                <input 
-                  type="text" 
-                  value={publico}
-                  onChange={(e) => setPublico(e.target.value)}
-                  placeholder="Ex: Noivos, Pequenas Empresas de Tecnologia..."
-                  className="input-field"
-                />
-              </div>
-            </div>
-
-            <button 
-              onClick={handleGenerate}
-              disabled={isLoading || !categoria || !publico}
-              className="btn-primary w-full disabled:opacity-50"
-            >
-              {isLoading ? (
-                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>Gerar Proposta Estratégica <Sparkles size={20} /></>
-              )}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="p-4 bg-white/5 rounded-xl border border-border">
-                <h4 className="text-xs font-bold text-brand-pink uppercase mb-2">Descrição Otimizada</h4>
-                <p className="text-sm text-white leading-relaxed">{suggestion.descricao_melhorada}</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-white/5 rounded-xl border border-border">
-                  <h4 className="text-xs font-bold text-brand-gold uppercase mb-2">Argumento de Venda</h4>
-                  <p className="text-sm text-white italic">"{suggestion.argumento_venda}"</p>
-                </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-border">
-                  <h4 className="text-xs font-bold text-brand-orange uppercase mb-2">Preço Sugerido</h4>
-                  <p className="text-lg font-bold text-white">{suggestion.preco_sugerido}</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-brand-purple/5 rounded-xl border border-brand-purple/20">
-                <h4 className="text-xs font-bold text-brand-purple uppercase mb-2">Sugestão de Upsell: {suggestion.upsell.nome}</h4>
-                <p className="text-sm text-text-secondary">{suggestion.upsell.descricao}</p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {suggestion.termos_sugeridos.map((termo, i) => (
-                  <span key={i} className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold text-text-secondary border border-border uppercase">
-                    {termo}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <button onClick={() => setSuggestion(null)} className="btn-outline flex-1">
-                Refazer
-              </button>
-              <button 
-                onClick={() => onApply(suggestion)}
-                className="btn-primary flex-[2]"
-              >
-                Aplicar ao Orçamento <Check size={20} />
-              </button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-};
 
 const BudgetItemRow = memo(({ item, updateItem, removeItem }: { 
   item: BudgetItem; 
@@ -204,7 +58,7 @@ BudgetItemRow.displayName = "BudgetItemRow";
 export default function CreateBudget() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { plan, checkAccess, isUpgradeModalOpen, blockedFeature, closeUpgradeModal } = usePlan();
+  const { plan, checkAccess, openUpgradeModal, isUpgradeModalOpen, blockedFeature, closeUpgradeModal } = usePlan();
   const user = storage.getUser();
   const [step, setStep] = useState(1);
   const [clientId, setClientId] = useState("");
@@ -216,21 +70,15 @@ export default function CreateBudget() {
   const [isSaving, setIsSaving] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [budgetsHistory, setBudgetsHistory] = useState<Budget[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       if (user?.id) {
         setLoading(true);
         try {
-          const [fetchedClients, fetchedBudgets] = await Promise.all([
-            storage.getClients(user.id),
-            storage.getBudgets(user.id)
-          ]);
+          const fetchedClients = await storage.getClients(user.id);
           setClients(fetchedClients);
-          setBudgetsHistory(fetchedBudgets);
 
           if (id) {
             const budget = await storage.getBudgetById(id);
@@ -310,16 +158,21 @@ export default function CreateBudget() {
   };
 
   const handleAISuggestion = async () => {
-    if (!(await checkAccess('ai'))) return;
-    setIsAIModalOpen(true);
-  };
-
-  const applyAISuggestion = (suggestion: AISuggestionResponse) => {
-    setObservations(suggestion.descricao_melhorada);
-    setIsAIModalOpen(false);
+    if (plan !== 'premium') {
+      openUpgradeModal('premium', 'Sugestões com IA');
+      return;
+    }
     
-    // Optional: could also update prices if suggestion.preco_sugerido is provided and user wants it
-    // For now we just update the description as it's the most common use case
+    setIsGeneratingAI(true);
+    // Simulate AI generation
+    setTimeout(() => {
+      const suggestion = `Sugestão da Nexora AI para ${clients.find(c => c.id === clientId)?.name || 'este cliente'}: 
+Este orçamento inclui materiais de alta qualidade e mão de obra especializada. 
+Garantia de 12 meses para todos os serviços executados. 
+Condições de pagamento: 50% de entrada e o restante na entrega ou parcelamento em até 3x sem juros.`;
+      setObservations(suggestion);
+      setIsGeneratingAI(false);
+    }, 1500);
   };
 
   const steps = [
@@ -584,7 +437,7 @@ export default function CreateBudget() {
             </p>
             {plan === 'free' && (
               <button 
-                onClick={() => checkAccess('create_budget')}
+                onClick={() => openUpgradeModal('pro')}
                 className="mt-4 w-full py-2 bg-brand-orange/10 text-brand-orange text-xs font-bold rounded-lg hover:bg-brand-orange/20 transition-all"
               >
                 Remover limites do plano Free
@@ -599,17 +452,6 @@ export default function CreateBudget() {
         onClose={closeUpgradeModal} 
         featureName={blockedFeature?.name}
         targetPlan={blockedFeature?.target}
-      />
-
-      <AISuggestionModal 
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        onApply={applyAISuggestion}
-        initialData={{
-          descricao: observations,
-          preco: formatCurrency(total),
-          historico: budgetsHistory.slice(0, 3).map(b => `${b.clientName}: ${b.total}`).join('; ')
-        }}
       />
     </div>
   );

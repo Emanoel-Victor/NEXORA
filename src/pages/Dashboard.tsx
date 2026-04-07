@@ -20,12 +20,12 @@ import {
   Cell
 } from 'recharts';
 
-const StatCard = memo(({ stat, i, plan, checkAccess }: any) => (
+const StatCard = memo(({ stat, i, plan, openUpgradeModal }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: i * 0.1 }}
-    onClick={stat.premium ? async () => await checkAccess('advanced_dashboard') : undefined}
+    onClick={stat.premium ? () => openUpgradeModal(plan === 'free' ? 'pro' : 'premium', stat.label) : undefined}
     className={cn(
       "glass-card p-6 relative overflow-hidden group transition-all",
       stat.premium && "cursor-pointer hover:border-brand-pink/30"
@@ -90,7 +90,7 @@ function DashboardSkeleton() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { plan, checkAccess, isUpgradeModalOpen, blockedFeature, closeUpgradeModal, limits } = usePlan();
+  const { plan, checkAccess, openUpgradeModal, isUpgradeModalOpen, blockedFeature, closeUpgradeModal, limits } = usePlan();
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
   const user = storage.getUser();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -287,7 +287,7 @@ export default function Dashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
-          <StatCard key={stat.label} stat={stat} i={i} plan={plan} checkAccess={checkAccess} />
+          <StatCard key={stat.label} stat={stat} i={i} plan={plan} openUpgradeModal={openUpgradeModal} />
         ))}
       </div>
 
@@ -298,7 +298,7 @@ export default function Dashboard() {
           <div className="glass-card p-8 relative overflow-hidden">
             {!hasAdvancedDashboard && (
               <div 
-                onClick={async () => await checkAccess('advanced_dashboard')}
+                onClick={() => openUpgradeModal('premium', 'Dashboard Avançado')}
                 className="absolute inset-0 z-10 bg-background/40 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer group"
               >
                 <div className="glass-card p-6 text-center scale-110 shadow-2xl border-brand-gold/30">
@@ -508,7 +508,7 @@ export default function Dashboard() {
           <div className="glass-card p-6 relative overflow-hidden">
             {!hasAdvancedDashboard && (
               <div 
-                onClick={async () => await checkAccess('advanced_dashboard')}
+                onClick={() => openUpgradeModal('premium', 'Status de Conversão')}
                 className="absolute inset-0 z-10 bg-background/40 backdrop-blur-[2px] flex items-center justify-center cursor-pointer"
               />
             )}
@@ -593,7 +593,15 @@ export default function Dashboard() {
               )}
               
               <button 
-                onClick={async () => await checkAccess(plan === 'free' ? 'create_budget' : 'ai')}
+                onClick={() => {
+                  if (plan === 'premium') {
+                    // Logic for managing subscription (e.g., Perfect Pay portal)
+                    // For now, we can just show a message or redirect
+                    window.open('https://perfectpay.com.br/', '_blank');
+                  } else {
+                    openUpgradeModal(plan === 'free' ? 'pro' : 'premium');
+                  }
+                }}
                 className="w-full py-3 bg-white text-brand-purple font-bold rounded-xl hover:bg-opacity-90 transition-all shadow-lg"
               >
                 {plan === 'premium' ? 'Gerenciar Assinatura' : 'Fazer Upgrade'}

@@ -8,7 +8,7 @@ import UpgradeModal from "../components/UpgradeModal";
 import PixSettings from "../components/PixSettings";
 
 export default function Settings() {
-  const { plan, checkAccess, isUpgradeModalOpen, blockedFeature, closeUpgradeModal } = usePlan();
+  const { plan, checkAccess, openUpgradeModal, isUpgradeModalOpen, blockedFeature, closeUpgradeModal } = usePlan();
   const user = storage.getUser();
   const [activeTab, setActiveTab] = useState("profile");
 
@@ -256,45 +256,9 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {plan !== 'free' && (
-                      <button 
-                        onClick={async () => {
-                          if (user) {
-                            await storage.setUser({ ...user, plan: 'free' });
-                            window.location.reload();
-                          }
-                        }}
-                        className="btn-outline px-4 py-2 text-xs"
-                      >
-                        Downgrade para Free
-                      </button>
-                    )}
-                    {plan !== 'pro' && (
-                      <button 
-                        onClick={async () => {
-                          if (user) {
-                            await storage.setUser({ ...user, plan: 'pro' });
-                            window.location.reload();
-                          }
-                        }}
-                        className="btn-primary px-4 py-2 text-xs"
-                      >
-                        Mudar para Pro
-                      </button>
-                    )}
-                    {plan !== 'premium' && (
-                      <button 
-                        onClick={async () => {
-                          if (user) {
-                            await storage.setUser({ ...user, plan: 'premium' });
-                            window.location.reload();
-                          }
-                        }}
-                        className="bg-white text-background hover:bg-white/90 px-4 py-2 text-xs font-bold rounded-xl transition-all"
-                      >
-                        Mudar para Premium
-                      </button>
-                    )}
+                    <span className="px-3 py-1 rounded-full bg-brand-purple/20 text-brand-purple text-xs font-bold border border-brand-purple/30 uppercase">
+                      Ativo
+                    </span>
                   </div>
                 </div>
 
@@ -316,7 +280,7 @@ export default function Settings() {
                       <p className="text-2xl font-bold text-brand-pink mb-1">{p.price}<span className="text-xs text-text-secondary font-normal">/mês</span></p>
                       <p className="text-xs text-text-secondary mb-6">{p.description}</p>
                       
-                      <ul className="space-y-3">
+                      <ul className="space-y-3 mb-6">
                         {p.featureList?.map((feature: any, idx: number) => (
                           <li key={idx} className={cn(
                             "flex items-center gap-3 text-xs",
@@ -331,6 +295,20 @@ export default function Settings() {
                           </li>
                         ))}
                       </ul>
+
+                      {plan !== key && key !== 'free' && (
+                        <button 
+                          onClick={() => openUpgradeModal(key as 'pro' | 'premium')}
+                          className={cn(
+                            "w-full py-2 rounded-xl text-xs font-bold transition-all",
+                            key === 'pro' 
+                              ? "btn-primary" 
+                              : "bg-transparent border border-brand-gold text-brand-gold hover:bg-brand-gold/10"
+                          )}
+                        >
+                          Assinar {p.name}
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -401,7 +379,7 @@ export default function Settings() {
                       <p className="text-xs text-text-secondary">Faça o upgrade para o plano Premium para liberar cores personalizadas e remover a marca Nexora.</p>
                     </div>
                     <button 
-                      onClick={async () => await checkAccess('customization')}
+                      onClick={() => openUpgradeModal('premium', 'Personalização Completa')}
                       className="text-xs font-bold text-brand-gold hover:underline"
                     >
                       Upgrade

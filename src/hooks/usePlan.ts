@@ -39,7 +39,7 @@ export function usePlan() {
     if (!access && !silent) {
       // Determine which plan is needed
       let target: 'pro' | 'premium' = 'pro';
-      if (['ai', 'automations', 'payments'].includes(feature)) {
+      if (['ai', 'automations', 'payments', 'advanced_dashboard', 'customization'].includes(feature)) {
         target = 'premium';
       }
 
@@ -114,6 +114,14 @@ export function usePlan() {
     return access;
   }, [user, hasAccess]);
 
+  const openUpgradeModal = (target: 'pro' | 'premium' = 'pro', featureName?: string) => {
+    setBlockedFeature({ 
+      name: featureName || (target === 'pro' ? 'Plano Pro' : 'Plano Premium'), 
+      target 
+    });
+    setIsUpgradeModalOpen(true);
+  };
+
   const closeUpgradeModal = () => {
     setIsUpgradeModalOpen(false);
     setBlockedFeature(null);
@@ -124,6 +132,7 @@ export function usePlan() {
     plan: user?.plan || 'free',
     limits: user ? PLAN_LIMITS[user.plan] : PLAN_LIMITS.free,
     checkAccess,
+    openUpgradeModal,
     isUpgradeModalOpen,
     blockedFeature,
     closeUpgradeModal
