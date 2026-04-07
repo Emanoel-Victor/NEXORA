@@ -30,10 +30,10 @@ export default function UpgradeModal({ isOpen, onClose, featureName, targetPlan 
     const user = storage.getUser();
     if (!user) return;
 
-    // Safely access environment variables
+    // Safely access environment variables with hardcoded fallbacks
     const env = (import.meta as any).env || {};
-    const proUrl = env.VITE_PERFECT_PAY_PRO_CHECKOUT_URL;
-    const premiumUrl = env.VITE_PERFECT_PAY_PREMIUM_CHECKOUT_URL;
+    const proUrl = env.VITE_PERFECT_PAY_PRO_CHECKOUT_URL || 'https://checkout.perfectpay.com.br/pay/PPU38CQA42C?';
+    const premiumUrl = env.VITE_PERFECT_PAY_PREMIUM_CHECKOUT_URL || 'https://checkout.perfectpay.com.br/pay/PPU38CQA42M?';
 
     let checkoutUrl = (planId === 'pro' ? proUrl : premiumUrl)?.trim();
 
