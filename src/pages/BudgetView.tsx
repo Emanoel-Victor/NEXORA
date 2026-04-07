@@ -126,118 +126,104 @@ export default function BudgetView() {
       window.scrollTo(0, 0);
 
       // Small delay to ensure any animations are finished and scroll is stable
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // All plans are now dark theme
       const bgColor = "#0A0F1C";
       const surfaceColor = "#161B27"; // bg-white/5 equivalent over #0A0F1C
       const cardColor = "#111827";    // bg-card equivalent
 
-      const canvas = await html2canvas(pdfRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: bgColor,
-        width: pdfRef.current.scrollWidth,
-        height: pdfRef.current.scrollHeight,
-        onclone: (clonedDoc) => {
-          // Force background on the whole document to avoid white gaps
-          clonedDoc.documentElement.style.backgroundColor = bgColor;
-          clonedDoc.body.style.backgroundColor = bgColor;
+      let canvas;
+      try {
+        canvas = await html2canvas(pdfRef.current, {
+          scale: 1.2, // Even lower scale for maximum compatibility
+          useCORS: true,
+          allowTaint: false,
+          logging: false,
+          backgroundColor: bgColor,
+          width: pdfRef.current.scrollWidth,
+          height: pdfRef.current.scrollHeight,
+          onclone: (clonedDoc) => {
+            // Force background on the whole document to avoid white gaps
+            clonedDoc.documentElement.style.backgroundColor = bgColor;
+            clonedDoc.body.style.backgroundColor = bgColor;
 
-          // 1. Remove all style tags that might contain oklch/oklab/color-mix (Tailwind 4 defaults)
-          const styleTags = Array.from(clonedDoc.getElementsByTagName('style'));
-          styleTags.forEach(tag => {
-            try {
-              let css = tag.innerHTML;
-              if (css.includes('oklch') || css.includes('oklab') || css.includes('color-mix')) {
-                tag.innerHTML = css
-                  .replace(/oklch\(0\.627 0\.258 338\.29\)/g, '#FF4FD8') // brand-pink
-                  .replace(/oklch\(0\.715 0\.203 45\.36\)/g, '#FF8A4C')  // brand-orange
-                  .replace(/oklch\(0\.845 0\.184 86\.18\)/g, '#FFD700')  // brand-gold
-                  .replace(/oklch\([^)]+\)/g, '#94a3b8') // fallback to slate-400
-                  .replace(/oklab\([^)]+\)/g, '#94a3b8')
-                  .replace(/color-mix\([^)]+\)/g, '#94a3b8');
+            // 1. Remove all style tags that might contain oklch/oklab/color-mix (Tailwind 4 defaults)
+            const styleTags = Array.from(clonedDoc.getElementsByTagName('style'));
+            styleTags.forEach(tag => {
+              try {
+                let css = tag.innerHTML;
+                if (css.includes('oklch') || css.includes('oklab') || css.includes('color-mix')) {
+                  tag.innerHTML = css
+                    .replace(/oklch\([^)]+\)/g, '#94a3b8')
+                    .replace(/oklab\([^)]+\)/g, '#94a3b8')
+                    .replace(/color-mix\([^)]+\)/g, '#94a3b8');
+                }
+              } catch (e) {
+                console.warn("Could not clean style tag", e);
               }
-            } catch (e) {
-              console.warn("Could not clean style tag", e);
-            }
-          });
+            });
 
-          // 2. Clean inline styles and handle gradients/transparencies
-          const elements = Array.from(clonedDoc.getElementsByTagName('*'));
-          elements.forEach(el => {
-            const htmlEl = el as HTMLElement;
-            
-            // Fix gradients and text-clip which html2canvas fails on
-            if (htmlEl.classList.contains('text-brand-gradient') || htmlEl.classList.contains('bg-brand-gradient')) {
-              htmlEl.style.background = 'none';
-              htmlEl.style.webkitBackgroundClip = 'unset';
-              htmlEl.style.webkitTextFillColor = 'inherit';
-              htmlEl.style.color = budgetPlan === 'premium' ? '#FFD700' : '#FF4FD8';
-            }
+            // 2. Clean inline styles and handle gradients/transparencies
+            const elements = Array.from(clonedDoc.getElementsByTagName('*'));
+            elements.forEach(el => {
+              const htmlEl = el as HTMLElement;
+              
+              if (htmlEl.classList.contains('text-brand-gradient') || htmlEl.classList.contains('bg-brand-gradient')) {
+                htmlEl.style.background = 'none';
+                htmlEl.style.webkitBackgroundClip = 'unset';
+                htmlEl.style.webkitTextFillColor = 'inherit';
+                htmlEl.style.color = budgetPlan === 'premium' ? '#FFD700' : '#FF4FD8';
+              }
 
-            // Replace glass-card and bg-white/5 with solid colors for PDF
-            if (htmlEl.classList.contains('glass-card')) {
-              htmlEl.style.backgroundColor = cardColor;
-              htmlEl.style.backgroundImage = 'none';
-              htmlEl.style.backdropFilter = 'none';
-              htmlEl.style.setProperty('-webkit-backdrop-filter', 'none');
-              htmlEl.style.border = '1px solid #1f2937';
-            }
-            if (htmlEl.classList.contains('bg-white/5')) {
-              htmlEl.style.backgroundColor = surfaceColor;
-            }
-            if (htmlEl.classList.contains('bg-card')) {
-              htmlEl.style.backgroundColor = cardColor;
-            }
-            if (htmlEl.classList.contains('bg-brand-pink/5')) {
-              htmlEl.style.backgroundColor = '#1A0D16'; // Dark pinkish surface
-            }
-            if (htmlEl.classList.contains('bg-brand-pink/10')) {
-              htmlEl.style.backgroundColor = '#2D1424';
-            }
-            if (htmlEl.classList.contains('bg-brand-gold/5')) {
-              htmlEl.style.backgroundColor = '#1A160D'; // Dark goldish surface
-            }
-            if (htmlEl.classList.contains('bg-brand-gold/10')) {
-              htmlEl.style.backgroundColor = '#2D2714';
-            }
-            if (htmlEl.classList.contains('bg-green-400/10')) {
-              htmlEl.style.backgroundColor = '#0D1A11';
-            }
-            if (htmlEl.classList.contains('bg-brand-orange/10')) {
-              htmlEl.style.backgroundColor = '#1A130D';
-            }
+              if (htmlEl.classList.contains('glass-card')) {
+                htmlEl.style.backgroundColor = cardColor;
+                htmlEl.style.backgroundImage = 'none';
+                htmlEl.style.backdropFilter = 'none';
+                htmlEl.style.setProperty('-webkit-backdrop-filter', 'none');
+                htmlEl.style.border = '1px solid #1f2937';
+              }
+              
+              const className = htmlEl.className || '';
+              if (typeof className === 'string') {
+                if (className.includes('bg-white/')) htmlEl.style.backgroundColor = surfaceColor;
+                if (className.includes('bg-brand-pink/')) htmlEl.style.backgroundColor = '#2D1424';
+                if (className.includes('bg-brand-gold/')) htmlEl.style.backgroundColor = '#2D2714';
+              }
 
-            // Remove modern colors from inline styles
-            const styleAttr = htmlEl.getAttribute('style');
-            if (styleAttr && (styleAttr.includes('oklch') || styleAttr.includes('oklab') || styleAttr.includes('color-mix'))) {
-              htmlEl.setAttribute('style', styleAttr
-                .replace(/oklch\([^)]+\)/g, '#94a3b8')
-                .replace(/oklab\([^)]+\)/g, '#94a3b8')
-                .replace(/color-mix\([^)]+\)/g, '#94a3b8')
-              );
-            }
-            
-            // Force opacity to 1 to avoid animation issues
-            if (htmlEl.style.opacity === '0') htmlEl.style.opacity = '1';
-          });
+              const styleAttr = htmlEl.getAttribute('style');
+              if (styleAttr && (styleAttr.includes('oklch') || styleAttr.includes('oklab') || styleAttr.includes('color-mix'))) {
+                htmlEl.setAttribute('style', styleAttr
+                  .replace(/oklch\([^)]+\)/g, '#94a3b8')
+                  .replace(/oklab\([^)]+\)/g, '#94a3b8')
+                  .replace(/color-mix\([^)]+\)/g, '#94a3b8')
+                );
+              }
+              
+              if (htmlEl.style.opacity === '0') htmlEl.style.opacity = '1';
+            });
 
-          // 3. Remove rounded corners and shadow for the PDF capture to fill the sheet perfectly
-          const container = clonedDoc.getElementById('budget-pdf-content');
-          if (container) {
-            container.style.borderRadius = '0';
-            container.style.boxShadow = 'none';
-            container.style.border = 'none';
-            container.style.margin = '0';
-            container.style.width = '100%';
-            container.style.maxWidth = 'none';
-            container.style.backgroundColor = bgColor;
+            const container = clonedDoc.getElementById('budget-pdf-content');
+            if (container) {
+              container.style.borderRadius = '0';
+              container.style.boxShadow = 'none';
+              container.style.border = 'none';
+              container.style.margin = '0';
+              container.style.width = '100%';
+              container.style.maxWidth = 'none';
+              container.style.backgroundColor = bgColor;
+            }
           }
-        }
-      });
+        });
+      } catch (err) {
+        console.error("Primeira tentativa de canvas falhou, tentando com escala 1.0", err);
+        canvas = await html2canvas(pdfRef.current, {
+          scale: 1.0,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: bgColor
+        });
+      }
 
       // Restore scroll position
       window.scrollTo(0, originalScrollY);
@@ -246,7 +232,10 @@ export default function BudgetView() {
         throw new Error("Canvas generation failed or returned empty.");
       }
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.9);
+      // Small delay to let the canvas settle
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.85); // Slightly lower quality for smaller size
       const pdf = new jsPDF({
         orientation: "p",
         unit: "mm",
@@ -284,13 +273,14 @@ export default function BudgetView() {
       }
 
       setSuccessMessage("PDF Gerado com Sucesso!");
+      console.log("Iniciando download do PDF...");
       pdf.save(`orcamento-${budget.id}.pdf`);
       
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error) {
       console.error("Erro detalhado ao gerar PDF:", error);
-      alert("Ocorreu um erro técnico ao gerar o PDF. Tente novamente ou use a função de imprimir do seu navegador (Ctrl+P).");
+      alert("Não foi possível gerar o PDF automaticamente devido a restrições do seu navegador ou tamanho do arquivo. \n\nSOLUÇÃO: Clique no ícone de folha (Imprimir) ao lado do botão de baixar e selecione 'Salvar como PDF'.");
     } finally {
       setIsDownloading(false);
     }
@@ -357,6 +347,13 @@ export default function BudgetView() {
               {copied ? <CheckCircle2 size={18} className="text-green-400 md:w-5 md:h-5" /> : <Share2 size={18} className="md:w-5 md:h-5" />}
             </button>
             <button
+              onClick={() => window.print()}
+              className="p-2 md:p-2.5 rounded-xl transition-all text-text-secondary bg-white/5 hover:text-white shrink-0"
+              title="Imprimir Orçamento"
+            >
+              <FileText size={18} className="md:w-5 md:h-5" />
+            </button>
+            <button
               onClick={downloadPDF}
               disabled={isDownloading}
               className={cn(
@@ -388,11 +385,9 @@ export default function BudgetView() {
         </div>
 
         {/* Budget Content */}
-        <motion.div
+        <div
           ref={pdfRef}
           id="budget-pdf-content"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           className={cn(
             "p-6 md:p-12 space-y-12 shadow-2xl",
             budgetPlan === 'free' ? "bg-card border border-border rounded-2xl" : "glass-card rounded-3xl shadow-brand-pink/10",
@@ -403,7 +398,7 @@ export default function BudgetView() {
           <div className="flex flex-col md:flex-row justify-between gap-8 border-b pb-12 border-border">
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <img src={professional.logo} alt="Logo" className="w-12 h-12 md:w-16 md:h-16 rounded-2xl border border-border" referrerPolicy="no-referrer" />
+                <img src={professional.logo} alt="Logo" className="w-12 h-12 md:w-16 md:h-16 rounded-2xl border border-border" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                 <div className="flex-1 min-w-0">
                   <h1 className="text-lg md:text-2xl font-bold text-white break-words">{professional.name}</h1>
                   <p className="text-xs md:text-sm text-text-secondary truncate">{professional.email}</p>
@@ -534,7 +529,7 @@ export default function BudgetView() {
               )}>NEXORA</span> - Transforme orçamentos em clientes.
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Floating Action Button Mobile */}
         <div className="md:hidden fixed bottom-8 left-4 right-4 z-50">

@@ -264,7 +264,20 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <span className="px-3 py-1 rounded-full bg-brand-purple/20 text-brand-purple text-xs font-bold border border-brand-purple/30 uppercase">
+                    <button 
+                      onClick={async () => {
+                        if (user?.id) {
+                          const profile = await storage.syncProfile(user.id);
+                          if (profile) {
+                            window.location.reload();
+                          }
+                        }
+                      }}
+                      className="px-4 py-1.5 rounded-xl bg-white/5 text-white text-xs font-bold border border-white/10 hover:bg-white/10 transition-all"
+                    >
+                      Sincronizar Plano
+                    </button>
+                    <span className="px-3 py-1 rounded-full bg-brand-purple/20 text-brand-purple text-xs font-bold border border-brand-purple/30 uppercase flex items-center">
                       Ativo
                     </span>
                   </div>

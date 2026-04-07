@@ -92,6 +92,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { plan, checkAccess, openUpgradeModal, isUpgradeModalOpen, blockedFeature, closeUpgradeModal, limits, refreshUser } = usePlan();
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const user = storage.getUser();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -300,6 +301,32 @@ export default function Dashboard() {
 
   const hasAdvancedDashboard = plan === 'premium';
 
+  const handleSyncPlan = async () => {
+    if (!user?.id) return;
+    setIsSyncing(true);
+    try {
+      const profile = await storage.syncProfile(user.id);
+      if (profile) {
+        refreshUser();
+        setNotification({
+          message: profile.plan !== user.plan 
+            ? `Parabéns! Seu plano foi atualizado para ${profile.plan.toUpperCase()}.` 
+            : "Seu plano já está sincronizado.",
+          type: 'success'
+        });
+      }
+    } catch (error) {
+      console.error("Error syncing plan:", error);
+      setNotification({
+        message: "Erro ao sincronizar plano. Tente novamente em instantes.",
+        type: 'info'
+      });
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setNotification(null), 4000);
+    }
+  };
+
   if (loading) return <DashboardSkeleton />;
 
   return (
@@ -307,7 +334,29 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold">Olá, {user?.name.split(' ')[0]}! 👋</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold">Olá, {user?.name.split(' ')[0]}! 👋</h1>
+            <div className={cn(
+              "px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider flex items-center gap-1.5",
+              plan === 'free' ? "bg-white/5 text-text-secondary border-white/10" : 
+              plan === 'pro' ? "bg-brand-pink/10 text-brand-pink border-brand-pink/20" : 
+              "bg-brand-gold/10 text-brand-gold border-brand-gold/20"
+            )}>
+              {plan === 'premium' ? <Sparkles size={12} /> : plan === 'pro' ? <Zap size={12} /> : null}
+              Plano {plan}
+            </div>
+            <button 
+              onClick={handleSyncPlan}
+              disabled={isSyncing}
+              title="Sincronizar Assinatura"
+              className={cn(
+                "p-1.5 rounded-lg hover:bg-white/5 text-text-secondary transition-all",
+                isSyncing && "animate-spin text-brand-pink"
+              )}
+            >
+              <Zap size={14} className={isSyncing ? "animate-pulse" : ""} />
+            </button>
+          </div>
           <p className="text-sm text-text-secondary">Aqui está o resumo do seu negócio hoje.</p>
         </div>
         <button onClick={handleCreateBudget} className="btn-primary w-full sm:w-auto">
