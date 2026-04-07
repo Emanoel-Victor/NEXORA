@@ -41,10 +41,14 @@ export default function UpgradeModal({ isOpen, onClose, featureName, targetPlan 
     const isValidUrl = checkoutUrl && (checkoutUrl.startsWith('http://') || checkoutUrl.startsWith('https://'));
 
     if (isValidUrl) {
+      // Update plan in database immediately for testing/demo purposes
+      await storage.updateUserPlan(planId);
+      
       // Redirect to Perfect Pay with user ID as a parameter
       const separator = checkoutUrl.includes('?') ? '&' : '?';
       window.open(`${checkoutUrl}${separator}us_id=${user.id}`, '_blank');
       onClose();
+      window.location.reload();
     } else {
       // If URL is missing or invalid, show a warning in console and use fallback
       console.warn(`URL de checkout para o plano ${planId} não configurada ou inválida:`, checkoutUrl);

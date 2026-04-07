@@ -14,9 +14,13 @@ export type FeatureType =
   | 'customization';
 
 export function usePlan() {
-  const user = storage.getUser();
+  const [user, setUserState] = useState(storage.getUser());
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [blockedFeature, setBlockedFeature] = useState<{ name: string; target: 'pro' | 'premium' } | null>(null);
+
+  const refreshUser = useCallback(() => {
+    setUserState(storage.getUser());
+  }, []);
 
   const hasAccess = useCallback((feature: FeatureType): boolean => {
     if (!user) return false;
@@ -30,9 +34,10 @@ export function usePlan() {
   }, [user]);
 
   const checkAccess = useCallback(async (feature: FeatureType, silent: boolean = false) => {
-    if (!user) return false;
+    const currentUser = storage.getUser();
+    if (!currentUser) return false;
 
-    const plan = user.plan;
+    const plan = currentUser.plan;
     const limits = PLAN_LIMITS[plan];
     const access = hasAccess(feature);
 
@@ -135,6 +140,7 @@ export function usePlan() {
     openUpgradeModal,
     isUpgradeModalOpen,
     blockedFeature,
-    closeUpgradeModal
+    closeUpgradeModal,
+    refreshUser
   };
 }

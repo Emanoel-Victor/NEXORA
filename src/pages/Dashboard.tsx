@@ -90,13 +90,25 @@ function DashboardSkeleton() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { plan, checkAccess, openUpgradeModal, isUpgradeModalOpen, blockedFeature, closeUpgradeModal, limits } = usePlan();
+  const { plan, checkAccess, openUpgradeModal, isUpgradeModalOpen, blockedFeature, closeUpgradeModal, limits, refreshUser } = usePlan();
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
   const user = storage.getUser();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function syncProfile() {
+      if (user?.id) {
+        const profile = await storage.syncProfile(user.id);
+        if (profile && profile.plan !== user.plan) {
+          refreshUser();
+        }
+      }
+    }
+    syncProfile();
+  }, [user?.id, refreshUser]);
 
   useEffect(() => {
     async function fetchData() {

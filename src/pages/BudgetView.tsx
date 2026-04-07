@@ -5,7 +5,7 @@ import { formatCurrency, formatDate, cn, formatWhatsAppNumber } from "../lib/uti
 import { useState, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { storage, Budget, PLAN_LIMITS, User, Client } from "../lib/storage";
+import { storage, Budget, PLAN_LIMITS, User, Client, PlanType } from "../lib/storage";
 import { supabaseService } from "../services/supabaseService";
 import { usePlan } from "../hooks/usePlan";
 import UpgradeModal from "../components/UpgradeModal";
@@ -74,7 +74,7 @@ export default function BudgetView() {
 
   const currentUser = storage.getUser();
   const isOwner = currentUser?.id === budget.userId;
-  const budgetPlan = (isOwner ? currentUser?.plan : professionalProfile?.plan) || 'free';
+  const budgetPlan = (professionalProfile?.plan || (isOwner ? currentUser?.plan : null) || 'free') as PlanType;
   const pixDataToUse = budget.pixData || professionalProfile?.pixData || (isOwner ? currentUser?.pixData : undefined);
 
   const professional = {

@@ -180,6 +180,17 @@ export const storage = {
     }
     return null;
   },
+  syncProfile: async (userId: string) => {
+    const profile = await supabaseService.getProfile(userId);
+    if (profile) {
+      const currentUser = storage.getUser();
+      if (currentUser && JSON.stringify(currentUser) !== JSON.stringify(profile)) {
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(profile));
+      }
+      return profile;
+    }
+    return null;
+  },
   savePixData: async (userId: string, pixData: PixData) => {
     const user = storage.getUser();
     if (user && user.id === userId) {
