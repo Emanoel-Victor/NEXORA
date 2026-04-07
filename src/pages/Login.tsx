@@ -10,9 +10,36 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Por favor, digite seu e-mail para recuperar a senha.");
+      return;
+    }
+
+    setResetLoading(true);
+    setError(null);
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (resetError) throw resetError;
+
+      setResetSent(true);
+    } catch (err: any) {
+      console.error("Reset password error:", err);
+      setError(err.message || "Erro ao enviar e-mail de recuperação.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,17 +79,7 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      let message = err.message || "Erro ao entrar na conta. Verifique suas credenciais.";
-      
-      if (message.includes("rate limit exceeded")) {
-        message = "Muitas tentativas de login em pouco tempo. Por favor, aguarde alguns minutos antes de tentar novamente.";
-      } else if (message.includes("Invalid login credentials")) {
-        message = "E-mail ou senha incorretos. Verifique seus dados e tente novamente.";
-      } else if (message.includes("Email not confirmed")) {
-        message = "Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada (e a pasta de spam) para ativar sua conta.";
-      }
-      
-      setError(message);
+      setError(err.message || "Erro ao entrar na conta. Verifique suas credenciais.");
     } finally {
       setLoading(false);
     }
@@ -90,6 +107,12 @@ export default function Login() {
               {error}
             </div>
           )}
+          {resetSent && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3 text-green-500 text-sm">
+              <AlertCircle size={18} className="text-green-500" />
+              E-mail de recuperação enviado! Verifique sua caixa de entrada.
+            </div>
+          )}
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium ml-1">E-mail</label>
@@ -109,7 +132,14 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
                 <label className="text-sm font-medium">Senha</label>
-                <button type="button" className="text-xs text-brand-pink hover:underline">Esqueceu a senha?</button>
+                <button 
+                  type="button" 
+                  onClick={handleForgotPassword}
+                  disabled={resetLoading}
+                  className="text-xs text-brand-pink hover:underline disabled:opacity-50"
+                >
+                  {resetLoading ? "Enviando..." : "Esqueceu a senha?"}
+                </button>
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-pink transition-colors" size={20} />

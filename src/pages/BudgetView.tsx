@@ -311,7 +311,8 @@ export default function BudgetView() {
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const shareUrl = `${window.location.origin}/view/${budget.id}`;
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setSuccessMessage("Link Copiado com Sucesso!");
       setShowSuccess(true);
@@ -325,13 +326,15 @@ export default function BudgetView() {
   };
 
   const shareViaWhatsApp = () => {
-    const text = encodeURIComponent(`Confira o orçamento #${budget.id} de ${professional.name}: ${window.location.href}`);
+    const shareUrl = `${window.location.origin}/view/${budget.id}`;
+    const text = encodeURIComponent(`Confira o orçamento #${budget.id} de ${professional.name}: ${shareUrl}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
   const shareViaEmail = () => {
+    const shareUrl = `${window.location.origin}/view/${budget.id}`;
     const subject = encodeURIComponent(`Orçamento #${budget.id} - ${professional.name}`);
-    const body = encodeURIComponent(`Olá, confira o orçamento no link abaixo:\n\n${window.location.href}`);
+    const body = encodeURIComponent(`Olá, confira o orçamento no link abaixo:\n\n${shareUrl}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
@@ -647,7 +650,7 @@ export default function BudgetView() {
                 "p-4 rounded-2xl border text-center break-all text-xs font-mono",
                 budgetPlan === 'free' ? "bg-white/5 border-border text-text-secondary" : "bg-white/5 border-white/10 text-text-secondary"
               )}>
-                {window.location.href}
+                {`${window.location.origin}/view/${budget.id}`}
               </div>
 
               <div className="grid grid-cols-1 gap-4">

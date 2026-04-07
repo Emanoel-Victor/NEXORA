@@ -18,6 +18,7 @@ const Budgets = lazy(() => import("./pages/Budgets"));
 const CreateBudget = lazy(() => import("./pages/CreateBudget"));
 const BudgetView = lazy(() => import("./pages/BudgetView"));
 const Settings = lazy(() => import("./pages/Settings"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 function LoadingSpinner() {
   return (
@@ -46,6 +47,7 @@ function AppRoutes() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/view/:id" element={<BudgetView />} />
         
         {/* Protected Routes */}
