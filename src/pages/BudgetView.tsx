@@ -74,7 +74,7 @@ export default function BudgetView() {
 
   const currentUser = storage.getUser();
   const isOwner = currentUser?.id === budget.userId;
-  const budgetPlan = professionalProfile?.plan || 'free';
+  const budgetPlan = (isOwner ? currentUser?.plan : professionalProfile?.plan) || 'free';
   const pixDataToUse = budget.pixData || professionalProfile?.pixData || (isOwner ? currentUser?.pixData : undefined);
 
   const professional = {
@@ -473,7 +473,7 @@ export default function BudgetView() {
           </div>
 
           {/* Payment Section (Available if professional is Premium and has Pix configured) */}
-          {professionalProfile?.plan === 'premium' && pixDataToUse && (
+          {budgetPlan === 'premium' && pixDataToUse && (
             <div className="bg-brand-gold/5 border border-brand-gold/20 p-8 rounded-3xl space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
