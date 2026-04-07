@@ -35,15 +35,21 @@ export default function UpgradeModal({ isOpen, onClose, featureName, targetPlan 
     const proUrl = env.VITE_PERFECT_PAY_PRO_CHECKOUT_URL;
     const premiumUrl = env.VITE_PERFECT_PAY_PREMIUM_CHECKOUT_URL;
 
-    const checkoutUrl = planId === 'pro' ? proUrl : premiumUrl;
+    let checkoutUrl = (planId === 'pro' ? proUrl : premiumUrl)?.trim();
 
-    if (checkoutUrl) {
+    // Validate if it's a real URL (must start with http)
+    const isValidUrl = checkoutUrl && (checkoutUrl.startsWith('http://') || checkoutUrl.startsWith('https://'));
+
+    if (isValidUrl) {
       // Redirect to Perfect Pay with user ID as a parameter
       const separator = checkoutUrl.includes('?') ? '&' : '?';
       window.open(`${checkoutUrl}${separator}us_id=${user.id}`, '_blank');
       onClose();
     } else {
-      // Fallback to mock upgrade if no URL is configured
+      // If URL is missing or invalid, show a warning in console and use fallback
+      console.warn(`URL de checkout para o plano ${planId} não configurada ou inválida:`, checkoutUrl);
+      
+      // Fallback to mock upgrade for testing purposes
       await storage.updateUserPlan(planId);
       onClose();
       window.location.reload();
