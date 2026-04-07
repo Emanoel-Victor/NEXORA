@@ -72,16 +72,16 @@ export default function UpgradeModal({ isOpen, onClose, featureName, targetPlan 
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-4xl bg-background border border-border rounded-3xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-4xl bg-background border border-border rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
           >
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 p-2 hover:bg-white/5 rounded-full text-text-secondary transition-colors z-10"
+              className="absolute top-6 right-6 p-2 hover:bg-white/5 rounded-full text-text-secondary transition-colors z-20"
             >
               <X size={24} />
             </button>
 
-            <div className="p-8 md:p-12">
+            <div className="p-6 md:p-12 overflow-y-auto scrollbar-hide">
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-brand-pink/10 text-brand-pink text-xs font-bold border border-brand-pink/20 mb-4">
                   <ShieldCheck size={14} /> UPGRADE DISPONÍVEL

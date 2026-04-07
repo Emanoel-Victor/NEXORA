@@ -190,20 +190,20 @@ Condições de pagamento: 50% de entrada e o restante na entrega ou parcelamento
         </div>
         
         {/* Steps Indicator */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-1 md:gap-4">
           {steps.map((s, i) => (
             <div key={s.number} className="flex items-center">
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold transition-all",
+                "w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] md:text-sm font-bold transition-all",
                 step >= s.number ? "bg-brand-gradient text-white shadow-lg shadow-brand-pink/20" : "bg-white/10 text-text-secondary"
               )}>
-                {step > s.number ? <Check size={16} /> : s.number}
+                {step > s.number ? <Check size={12} className="md:w-4 md:h-4" /> : s.number}
               </div>
               <span className={cn(
-                "ml-2 text-xs md:text-sm font-medium hidden sm:inline",
+                "ml-1.5 md:ml-2 text-[10px] md:text-sm font-medium hidden xs:inline",
                 step >= s.number ? "text-white" : "text-text-secondary"
               )}>{s.label}</span>
-              {i < steps.length - 1 && <div className="w-4 md:w-8 h-px bg-white/10 mx-2 md:mx-4" />}
+              {i < steps.length - 1 && <div className="w-2 md:w-8 h-px bg-white/10 mx-1 md:mx-4" />}
             </div>
           ))}
         </div>

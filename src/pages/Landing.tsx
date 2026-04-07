@@ -38,7 +38,7 @@ export default function Landing() {
             <span className="px-4 py-2 rounded-full bg-brand-pink/10 text-brand-pink text-sm font-semibold border border-brand-pink/20 mb-6 inline-block">
               Transforme orçamentos em clientes
             </span>
-            <h1 className="text-5xl md:text-7xl font-display font-bold mb-8 leading-tight">
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-display font-bold mb-8 leading-tight">
               Crie orçamentos <span className="text-brand-gradient">profissionais</span> em segundos.
             </h1>
             <p className="text-xl text-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed">

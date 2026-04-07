@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useLocation } from "react-router-dom";
 import { User, Shield, CreditCard, Bell, Palette, Globe, Save, Zap, Sparkles, Check, Lock, X, Wallet, Camera, Trash2 } from "lucide-react";
 import { storage, PLAN_LIMITS } from "../lib/storage";
 import { cn } from "../lib/utils";
@@ -10,7 +11,14 @@ import PixSettings from "../components/PixSettings";
 export default function Settings() {
   const { plan, checkAccess, openUpgradeModal, isUpgradeModalOpen, blockedFeature, closeUpgradeModal } = usePlan();
   const user = storage.getUser();
-  const [activeTab, setActiveTab] = useState("profile");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "profile");
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (activeTab === "payments" && plan !== "premium") {
@@ -126,16 +134,16 @@ export default function Settings() {
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar Tabs */}
-        <div className="w-full md:w-64 space-y-2">
+        <div className="w-full md:w-64 flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide">
           {visibleTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap md:whitespace-normal shrink-0 md:shrink",
                 activeTab === tab.id 
                   ? "bg-brand-purple/10 text-brand-purple border border-brand-purple/20 shadow-[0_0_15px_rgba(108,59,255,0.1)]" 
-                  : "text-text-secondary hover:bg-white/5"
+                  : "text-text-secondary hover:bg-white/5 border border-transparent"
               )}
             >
               <tab.icon size={18} />

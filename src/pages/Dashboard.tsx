@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, TrendingUp, Users, FileText, DollarSign, ArrowUpRight, Clock, Zap, Sparkles, BarChart3, PieChart as PieChartIcon, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { formatCurrency, cn } from "../lib/utils";
+import { formatCurrency, cn, formatWhatsAppNumber } from "../lib/utils";
 import { storage, Budget, Client } from "../lib/storage";
 import { useEffect, useState, useMemo, memo } from "react";
 import { usePlan } from "../hooks/usePlan";
@@ -45,11 +45,11 @@ const StatCard = memo(({ stat, i, plan, openUpgradeModal }: any) => (
         </span>
       )}
     </div>
-    <div className="text-2xl font-bold mb-1">{stat.value}</div>
-    <div className="text-sm text-text-secondary flex items-center justify-between">
-      {stat.label}
+    <div className="text-xl md:text-2xl font-bold mb-1 truncate">{stat.value}</div>
+    <div className="text-xs md:text-sm text-text-secondary flex items-center justify-between gap-2">
+      <span className="truncate">{stat.label}</span>
       {stat.limit && (
-        <span className="text-[10px] font-bold text-brand-pink">Limite: {stat.limit}</span>
+        <span className="text-[9px] md:text-[10px] font-bold text-brand-pink shrink-0">Lim: {stat.limit}</span>
       )}
     </div>
     {stat.limit && (
@@ -257,14 +257,34 @@ export default function Dashboard() {
     }
   };
 
-  const handleFollowUp = async (clientName: string) => {
+  const handleFollowUp = async (budget: Budget) => {
     if (!(await checkAccess('automations'))) return;
-    setNotification({
-      message: `Follow-up automático agendado para ${clientName} em 24h.`,
-      type: 'success'
-    });
+    
+    const client = clients.find(c => c.id === budget.clientId);
+    if (client && client.phone) {
+      const message = `Olá ${client.name}, tudo bem? Estou passando para saber se você conseguiu analisar o orçamento que te enviei. Fico à disposição para tirar qualquer dúvida!`;
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${formatWhatsAppNumber(client.phone)}?text=${encodedMessage}`;
+      window.open(whatsappUrl, '_blank');
+      
+      setNotification({
+        message: `Abrindo WhatsApp para follow-up com ${client.name}.`,
+        type: 'success'
+      });
+    } else {
+      setNotification({
+        message: `Não foi possível encontrar o contato de ${budget.clientName}.`,
+        type: 'info'
+      });
+    }
     setTimeout(() => setNotification(null), 4000);
   };
+
+  const latestPendingBudget = useMemo(() => {
+    return [...budgets]
+      .filter(b => b.status === 'Pendente')
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+  }, [budgets]);
 
   const hasAdvancedDashboard = plan === 'premium';
 
@@ -285,7 +305,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, i) => (
           <StatCard key={stat.label} stat={stat} i={i} plan={plan} openUpgradeModal={openUpgradeModal} />
         ))}
@@ -449,41 +469,42 @@ export default function Dashboard() {
               <h2 className="text-xl font-bold">Orçamentos Recentes</h2>
               <Link to="/budgets" className="text-sm text-brand-pink hover:underline">Ver todos</Link>
             </div>
-            <div className="glass-card overflow-hidden">
+            <div className="glass-card overflow-hidden -mx-3 md:mx-0">
               <div className="overflow-x-auto">
-                <table className="w-full text-left min-w-[600px]">
+                <table className="w-full text-left min-w-[500px] md:min-w-0">
                   <thead>
                     <tr className="border-b border-border bg-white/5">
-                      <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Cliente</th>
-                      <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Data</th>
-                      <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Total</th>
-                      <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Status</th>
-                      <th className="px-6 py-4 text-sm font-semibold text-text-secondary text-right">Ações</th>
+                      <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary">Cliente</th>
+                      <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary">Total</th>
+                      <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary">Status</th>
+                      <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {recentBudgets.length > 0 ? (
                       recentBudgets.map((budget) => (
                         <tr key={budget.id} className="hover:bg-white/5 transition-colors group">
-                          <td className="px-6 py-4 font-medium text-white">{budget.clientName}</td>
-                          <td className="px-6 py-4 text-sm text-text-secondary">{budget.date}</td>
-                          <td className="px-6 py-4 font-bold text-white">{formatCurrency(budget.total)}</td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 md:px-6 py-4">
+                            <div className="font-medium text-white text-sm md:text-base truncate max-w-[120px] md:max-w-none">{budget.clientName}</div>
+                            <div className="text-[10px] text-text-secondary md:hidden">{budget.date}</div>
+                          </td>
+                          <td className="px-4 md:px-6 py-4 font-bold text-white text-sm md:text-base">{formatCurrency(budget.total)}</td>
+                          <td className="px-4 md:px-6 py-4">
                             <StatusBadge 
                               budget={budget} 
                               onStatusChange={refreshBudgets}
                             />
                           </td>
-                          <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
+                          <td className="px-4 md:px-6 py-4 text-right flex items-center justify-end gap-1 md:gap-2">
                             <button 
-                              onClick={() => handleFollowUp(budget.clientName)}
-                              className="p-2 hover:bg-brand-gold/10 text-text-secondary hover:text-brand-gold rounded-lg transition-all"
+                              onClick={() => handleFollowUp(budget)}
+                              className="p-1.5 md:p-2 hover:bg-brand-gold/10 text-text-secondary hover:text-brand-gold rounded-lg transition-all"
                               title="Follow-up Automático"
                             >
-                              <Clock size={18} />
+                              <Clock size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
-                            <Link to={`/view/${budget.id}`} className="p-2 hover:bg-brand-pink/10 hover:text-brand-pink rounded-lg transition-all inline-block">
-                              <ArrowUpRight size={18} />
+                            <Link to={`/view/${budget.id}`} className="p-1.5 md:p-2 hover:bg-brand-pink/10 hover:text-brand-pink rounded-lg transition-all inline-block">
+                              <ArrowUpRight size={16} className="md:w-[18px] md:h-[18px]" />
                             </Link>
                           </td>
                         </tr>
@@ -592,33 +613,39 @@ export default function Dashboard() {
                 </>
               )}
               
-              <button 
-                onClick={() => {
-                  if (plan === 'premium') {
-                    // Logic for managing subscription (e.g., Perfect Pay portal)
-                    // For now, we can just show a message or redirect
-                    window.open('https://perfectpay.com.br/', '_blank');
-                  } else {
-                    openUpgradeModal(plan === 'free' ? 'pro' : 'premium');
-                  }
-                }}
-                className="w-full py-3 bg-white text-brand-purple font-bold rounded-xl hover:bg-opacity-90 transition-all shadow-lg"
-              >
-                {plan === 'premium' ? 'Gerenciar Assinatura' : 'Fazer Upgrade'}
-              </button>
+              {plan !== 'premium' && (
+                <button 
+                  onClick={() => navigate('/settings', { state: { tab: 'plan' } })}
+                  className="w-full py-3 bg-white text-brand-purple font-bold rounded-xl hover:bg-opacity-90 transition-all shadow-lg"
+                >
+                  Fazer Upgrade
+                </button>
+              )}
             </div>
           </div>
 
           {/* Quick Tip */}
           <div className="glass-card p-6">
             <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center text-brand-orange shrink-0 glow-orange">
+              <button 
+                onClick={() => latestPendingBudget && handleFollowUp(latestPendingBudget)}
+                disabled={!latestPendingBudget}
+                className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all",
+                  latestPendingBudget 
+                    ? "bg-brand-orange/10 text-brand-orange hover:scale-110 cursor-pointer glow-orange" 
+                    : "bg-white/5 text-text-secondary cursor-not-allowed"
+                )}
+                title={latestPendingBudget ? `Follow-up com ${latestPendingBudget.clientName}` : "Nenhum orçamento pendente"}
+              >
                 <Clock size={20} />
-              </div>
+              </button>
               <div>
                 <h4 className="font-bold mb-1 text-white">Dica do dia</h4>
                 <p className="text-sm text-text-secondary">
-                  Orçamentos enviados em até 30 minutos após o contato têm 4x mais chances de conversão.
+                  {latestPendingBudget 
+                    ? `Você tem um orçamento pendente para ${latestPendingBudget.clientName}. Clique no relógio para fazer um follow-up agora!`
+                    : "Orçamentos enviados em até 30 minutos após o contato têm 4x mais chances de conversão."}
                 </p>
               </div>
             </div>

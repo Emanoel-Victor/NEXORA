@@ -75,7 +75,7 @@ export default function PixPayment({ user, budget }: PixPaymentProps) {
   }
 
   return (
-    <div className="bg-[#0A0F1C] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-8 max-w-sm mx-auto overflow-hidden relative">
+    <div className="bg-[#0A0F1C] p-6 md:p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6 md:space-y-8 max-w-sm mx-auto overflow-hidden relative">
       <AnimatePresence>
         {isGenerating && (
           <motion.div 
@@ -85,17 +85,17 @@ export default function PixPayment({ user, budget }: PixPaymentProps) {
             className="absolute inset-0 z-20 bg-[#0A0F1C]/95 backdrop-blur-md flex flex-col items-center justify-center space-y-6"
           >
             <div className="relative">
-              <div className="w-20 h-20 border-4 border-[#FFD700]/10 rounded-full" />
-              <div className="absolute top-0 left-0 w-20 h-20 border-4 border-[#FFD700] border-t-transparent rounded-full animate-spin" />
+              <div className="w-16 h-16 md:w-20 md:h-20 border-4 border-[#FFD700]/10 rounded-full" />
+              <div className="absolute top-0 left-0 w-16 h-16 md:w-20 md:h-20 border-4 border-[#FFD700] border-t-transparent rounded-full animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <QrCode className="text-[#FFD700] animate-pulse" size={32} />
+                <QrCode className="text-[#FFD700] animate-pulse" size={28} />
               </div>
             </div>
             <div className="text-center space-y-2">
-              <p className="text-[#FFD700] font-black text-xl tracking-tighter uppercase animate-pulse">
+              <p className="text-[#FFD700] font-black text-lg md:text-xl tracking-tighter uppercase animate-pulse">
                 Gerando o QR Code...
               </p>
-              <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">
+              <p className="text-white/40 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">
                 Criptografando Pagamento
               </p>
             </div>
@@ -104,28 +104,28 @@ export default function PixPayment({ user, budget }: PixPaymentProps) {
       </AnimatePresence>
 
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/20 text-[#FFD700] text-[10px] font-bold uppercase tracking-widest mb-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/20 text-[#FFD700] text-[9px] md:text-[10px] font-bold uppercase tracking-widest mb-1 md:mb-2">
           <Sparkles size={12} /> Pagamento Seguro
         </div>
-        <h3 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
-          <CreditCard className="text-[#FFD700]" size={24} />
+        <h3 className="text-xl md:text-2xl font-bold text-white flex items-center justify-center gap-2">
+          <CreditCard className="text-[#FFD700]" size={20} />
           Pagamento via Pix
         </h3>
-        <div className="py-2">
-          <p className="text-3xl font-black text-white">
+        <div className="py-1 md:py-2">
+          <p className="text-2xl md:text-3xl font-black text-white">
             R$ {budget.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-text-secondary">Valor total do orçamento</p>
+          <p className="text-[10px] md:text-xs text-text-secondary">Valor total do orçamento</p>
         </div>
       </div>
 
-      <div className="flex justify-center relative">
-        <div className="p-4 bg-white rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.15)] relative">
+      <div className="flex justify-center relative scale-90 md:scale-100">
+        <div className="p-3 md:p-4 bg-white rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.15)] relative">
           {pixCode && !isGenerating ? (
             <>
               <QRCodeSVG 
                 value={pixCode} 
-                size={220}
+                size={window.innerWidth < 380 ? 180 : 220}
                 level="Q"
                 includeMargin={true}
                 className="mx-auto"

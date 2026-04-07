@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, Download, MessageCircle, Clock, Calendar, ShieldCheck, MapPin, ArrowLeft, Zap, Sparkles, FileText, Share2, CreditCard, QrCode, Copy } from "lucide-react";
-import { formatCurrency, formatDate, cn } from "../lib/utils";
+import { formatCurrency, formatDate, cn, formatWhatsAppNumber } from "../lib/utils";
 import { useState, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -93,21 +93,12 @@ export default function BudgetView() {
       return;
     }
     
-    // Clean phone numbers (remove non-digits)
-    const cleanPhone = (phone: string) => {
-      let cleaned = phone.replace(/\D/g, '');
-      if (cleaned.length === 11 && !cleaned.startsWith('55')) {
-        cleaned = '55' + cleaned;
-      }
-      return cleaned;
-    };
-
     if (isOwner && client?.phone) {
-      const clientPhone = cleanPhone(client.phone);
+      const clientPhone = formatWhatsAppNumber(client.phone);
       const message = encodeURIComponent(`Olá ${budget.clientName}, segue o link do seu orçamento #${budget.id} no valor de ${formatCurrency(budget.total)} para sua aprovação: ${window.location.href}`);
       window.open(`https://wa.me/${clientPhone}?text=${message}`, "_blank");
     } else {
-      const profPhone = cleanPhone(professional.phone);
+      const profPhone = formatWhatsAppNumber(professional.phone);
       const message = encodeURIComponent(`Olá, quero aprovar o orçamento #${budget.id} que você me enviou no valor de ${formatCurrency(budget.total)}.`);
       window.open(`https://wa.me/${profPhone}?text=${message}`, "_blank");
     }
@@ -328,7 +319,8 @@ export default function BudgetView() {
   const shareViaWhatsApp = () => {
     const shareUrl = `${window.location.origin}/view/${budget.id}`;
     const text = encodeURIComponent(`Confira o orçamento #${budget.id} de ${professional.name}: ${shareUrl}`);
-    window.open(`https://wa.me/?text=${text}`, "_blank");
+    const phone = client?.phone ? formatWhatsAppNumber(client.phone) : "";
+    window.open(`https://wa.me/${phone}?text=${text}`, "_blank");
   };
 
   const shareViaEmail = () => {
@@ -356,42 +348,41 @@ export default function BudgetView() {
               NEXORA
             </div>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+          <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
             <button
               onClick={handleShare}
-              className="p-2.5 rounded-xl transition-all text-text-secondary bg-white/5 hover:text-white shrink-0"
+              className="p-2 md:p-2.5 rounded-xl transition-all text-text-secondary bg-white/5 hover:text-white shrink-0"
               title="Compartilhar Link"
             >
-              {copied ? <CheckCircle2 size={20} className="text-green-400" /> : <Share2 size={20} />}
+              {copied ? <CheckCircle2 size={18} className="text-green-400 md:w-5 md:h-5" /> : <Share2 size={18} className="md:w-5 md:h-5" />}
             </button>
             <button
               onClick={downloadPDF}
               disabled={isDownloading}
               className={cn(
-                "py-2.5 px-4 text-xs md:text-sm rounded-xl font-bold flex items-center gap-2 transition-all shrink-0",
+                "py-2 md:py-2.5 px-3 md:px-4 text-[10px] md:text-sm rounded-xl font-bold flex items-center gap-2 transition-all shrink-0",
                 budgetPlan === 'free' ? "bg-white/5 text-white border border-border hover:bg-white/10" : "btn-outline"
               )}
             >
               {isDownloading ? (
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <Download size={16} /> 
-                  <span className="hidden xs:inline">Baixar PDF</span>
-                  <span className="xs:hidden">PDF</span>
-                  {budgetPlan === 'free' ? '(Simples)' : budgetPlan === 'pro' ? '(Pro)' : '(Premium)'}
+                  <Download size={14} className="md:w-4 md:h-4" /> 
+                  <span className="hidden sm:inline">Baixar PDF</span>
+                  <span className="sm:hidden">PDF</span>
                 </>
               )}
             </button>
             <button 
               onClick={handleApprove} 
               className={cn(
-                "py-2.5 px-4 text-xs md:text-sm rounded-xl font-bold flex items-center gap-2 transition-all shrink-0 text-white",
+                "py-2 md:py-2.5 px-3 md:px-4 text-[10px] md:text-sm rounded-xl font-bold flex items-center gap-2 transition-all shrink-0 text-white",
                 budgetPlan === 'free' ? "bg-white/5 border border-border" : "btn-primary"
               )}
             >
-              <MessageCircle size={16} /> <span className="hidden xs:inline">{budgetPlan === 'free' ? 'Aprovar (Pro)' : isOwner ? 'Enviar para Cliente' : 'Aprovar'}</span>
-              <span className="xs:hidden">{budgetPlan === 'free' ? 'Pro' : isOwner ? 'Enviar para Cliente' : 'Aprovar'}</span>
+              <MessageCircle size={14} className="md:w-4 md:h-4" /> <span className="hidden sm:inline">{budgetPlan === 'free' ? 'Aprovar (Pro)' : isOwner ? 'Enviar' : 'Aprovar'}</span>
+              <span className="sm:hidden">{budgetPlan === 'free' ? 'Pro' : isOwner ? 'Enviar' : 'Aprovar'}</span>
             </button>
           </div>
         </div>
@@ -413,23 +404,23 @@ export default function BudgetView() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <img src={professional.logo} alt="Logo" className="w-12 h-12 md:w-16 md:h-16 rounded-2xl border border-border" referrerPolicy="no-referrer" />
-                <div>
-                  <h1 className="text-xl md:text-2xl font-bold text-white">{professional.name}</h1>
-                  <p className="text-sm text-text-secondary">{professional.email}</p>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-lg md:text-2xl font-bold text-white break-words">{professional.name}</h1>
+                  <p className="text-xs md:text-sm text-text-secondary truncate">{professional.email}</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs md:text-sm text-text-secondary">
-                  <Calendar size={14} className="text-brand-pink" />
-                  Emitido em: {formatDate(budget.date)}
+                <div className="flex items-center gap-2 text-[10px] md:text-sm text-text-secondary">
+                  <Calendar size={14} className="text-brand-pink shrink-0" />
+                  <span className="truncate">Emitido em: {formatDate(budget.date)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs md:text-sm text-text-secondary">
-                  <Clock size={14} className="text-brand-orange" />
-                  Válido até: {formatDate(budget.expiry)}
+                <div className="flex items-center gap-2 text-[10px] md:text-sm text-text-secondary">
+                  <Clock size={14} className="text-brand-orange shrink-0" />
+                  <span className="truncate">Válido até: {formatDate(budget.expiry)}</span>
                 </div>
               </div>
             </div>
-            <div className="md:text-right space-y-2">
+            <div className="md:text-right space-y-2 min-w-0">
               <span className={cn(
                 "px-4 py-1 rounded-full text-[10px] md:text-xs font-bold border inline-block",
                 budgetPlan === 'free' ? "bg-white/5 text-white border border-white/10" : "bg-brand-pink/10 text-brand-pink border-brand-pink/20",
@@ -437,8 +428,8 @@ export default function BudgetView() {
               )}>
                 ORÇAMENTO #{budget.id}
               </span>
-              <h2 className="text-2xl md:text-4xl font-bold mt-4 text-white">Para: {budget.clientName}</h2>
-              <p className="text-sm text-text-secondary">Proposta de Prestação de Serviços</p>
+              <h2 className="text-xl md:text-4xl font-bold mt-4 text-white break-words">Para: {budget.clientName}</h2>
+              <p className="text-xs md:text-sm text-text-secondary">Proposta de Prestação de Serviços</p>
             </div>
           </div>
 
@@ -448,31 +439,31 @@ export default function BudgetView() {
               <CheckCircle2 size={24} className="text-brand-pink" />
               Serviços e Valores
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
+            <div className="overflow-x-auto -mx-6 md:mx-0">
+              <table className="w-full text-left min-w-[600px] md:min-w-0">
                 <thead>
                   <tr className="border-b border-border bg-white/5">
-                    <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Descrição</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-text-secondary text-center">Qtd</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-text-secondary text-right">Valor Unit.</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-text-secondary text-right">Subtotal</th>
+                    <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary">Descrição</th>
+                    <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary text-center">Qtd</th>
+                    <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary text-right">Valor Unit.</th>
+                    <th className="px-4 md:px-6 py-4 text-xs md:text-sm font-semibold text-text-secondary text-right">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {budget.items.map((item, i) => (
                     <tr key={i} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-6 font-medium text-white">{item.name}</td>
-                      <td className="px-6 py-6 text-center text-text-secondary">{item.quantity}</td>
-                      <td className="px-6 py-6 text-right text-text-secondary">{formatCurrency(item.price)}</td>
-                      <td className="px-6 py-6 text-right font-bold text-white">{formatCurrency(item.quantity * item.price)}</td>
+                      <td className="px-4 md:px-6 py-4 md:py-6 font-medium text-white text-sm md:text-base">{item.name}</td>
+                      <td className="px-4 md:px-6 py-4 md:py-6 text-center text-text-secondary text-sm md:text-base">{item.quantity}</td>
+                      <td className="px-4 md:px-6 py-4 md:py-6 text-right text-text-secondary text-sm md:text-base">{formatCurrency(item.price)}</td>
+                      <td className="px-4 md:px-6 py-4 md:py-6 text-right font-bold text-white text-sm md:text-base">{formatCurrency(item.quantity * item.price)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="bg-brand-pink/5">
-                    <td colSpan={3} className="px-6 py-8 text-right font-bold text-xl text-white">Total do Investimento:</td>
+                    <td colSpan={3} className="px-4 md:px-6 py-6 md:py-8 text-right font-bold text-base md:text-xl text-white">Total do Investimento:</td>
                     <td className={cn(
-                      "px-6 py-8 text-right font-bold text-3xl", 
+                      "px-4 md:px-6 py-6 md:py-8 text-right font-bold text-xl md:text-3xl", 
                       budgetPlan === 'free' ? "text-white" : "text-brand-gradient"
                     )}>{formatCurrency(budget.total)}</td>
                   </tr>
@@ -502,10 +493,10 @@ export default function BudgetView() {
           )}
 
           {/* Observations */}
-          <div className="grid md:grid-cols-2 gap-12 pt-12 border-t border-border">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 pt-12 border-t border-border">
             <div className="space-y-4">
-              <h3 className="font-bold text-text-secondary uppercase text-xs tracking-widest">Observações e Condições</h3>
-              <p className="text-sm leading-relaxed p-6 rounded-2xl border bg-white/5 text-text-secondary border-border">
+              <h3 className="font-bold text-text-secondary uppercase text-[10px] md:text-xs tracking-widest">Observações e Condições</h3>
+              <p className="text-xs md:text-sm leading-relaxed p-4 md:p-6 rounded-2xl border bg-white/5 text-text-secondary border-border break-words">
                 {budget.observations}
               </p>
             </div>

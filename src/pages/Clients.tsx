@@ -214,16 +214,16 @@ export default function Clients() {
               </div>
             </div>
 
-            <h3 className="text-xl font-bold mb-4 text-white">{client.name}</h3>
+            <h3 className="text-lg md:text-xl font-bold mb-4 text-white truncate">{client.name}</h3>
             
             <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3 text-sm text-text-secondary">
-                <Mail size={16} className="text-brand-pink" />
-                {client.email}
+              <div className="flex items-center gap-3 text-xs md:text-sm text-text-secondary">
+                <Mail size={16} className="text-brand-pink shrink-0" />
+                <span className="truncate">{client.email}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-text-secondary">
-                <Phone size={16} className="text-brand-pink" />
-                {client.phone}
+              <div className="flex items-center gap-3 text-xs md:text-sm text-text-secondary">
+                <Phone size={16} className="text-brand-pink shrink-0" />
+                <span className="truncate">{client.phone}</span>
               </div>
             </div>
 

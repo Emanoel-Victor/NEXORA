@@ -28,8 +28,8 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background text-white flex">
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex flex-col w-64 glass-card m-4 mr-0 border-r-0 rounded-r-none">
-        <div className="p-6">
+      <aside className="hidden md:flex flex-col w-64 glass-card m-4 mr-0 border-r-0 rounded-r-none overflow-y-auto scrollbar-hide">
+        <div className="p-6 sticky top-0 bg-background/50 backdrop-blur-md z-10">
           <Link to="/dashboard" className="text-2xl font-display font-bold text-brand-gradient">
             NEXORA
           </Link>
@@ -65,12 +65,12 @@ export default function Layout() {
       </aside>
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 glass-card m-2 rounded-xl flex items-center justify-between p-4 bg-background/80 backdrop-blur-xl border-white/10">
-        <Link to="/dashboard" className="text-xl font-display font-bold text-brand-gradient">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 glass-card m-2 rounded-xl flex items-center justify-between p-3 bg-background/80 backdrop-blur-xl border-white/10">
+        <Link to="/dashboard" className="text-lg font-display font-bold text-brand-gradient">
           NEXORA
         </Link>
         <button onClick={() => setIsSidebarOpen(true)} className="p-2 hover:bg-white/5 rounded-lg text-white">
-          <Menu size={24} />
+          <Menu size={20} />
         </button>
       </div>
 
@@ -136,7 +136,7 @@ export default function Layout() {
 
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 pt-24 md:pt-8 overflow-x-hidden">
+      <main className="flex-1 p-2 md:p-8 pt-16 md:pt-8 overflow-x-hidden">
         <div className="max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div

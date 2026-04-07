@@ -118,59 +118,57 @@ export default function Budgets() {
               transition={{ delay: i * 0.05 }}
               className="glass-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-brand-pink/30 transition-all"
             >
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3 md:gap-6">
                 <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
+                  "w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center shrink-0",
                   budget.status === "Aprovado" ? "bg-green-400/10 text-green-400" :
                   budget.status === "Recusado" ? "bg-red-400/10 text-red-400" :
                   "bg-brand-gold/10 text-brand-gold"
                 )}>
-                  <FileText size={24} />
+                  <FileText size={20} className="md:w-6 md:h-6" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">{budget.clientName}</h3>
-                  <div className="flex flex-wrap items-center gap-4 mt-1">
-                    <span className="text-xs font-mono text-text-secondary">#{budget.id}</span>
-                    <div className="flex items-center gap-1 text-xs text-text-secondary">
-                      <Calendar size={12} />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base md:text-lg font-bold text-white truncate">{budget.clientName}</h3>
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-1">
+                    <span className="text-[10px] md:text-xs font-mono text-text-secondary">#{budget.id}</span>
+                    <div className="flex items-center gap-1 text-[10px] md:text-xs text-text-secondary">
+                      <Calendar size={10} className="md:w-3 md:h-3" />
                       {budget.date}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-text-secondary">
-                      <Clock size={12} />
-                      Vence {budget.expiry}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col md:items-end gap-2">
-                <div className="text-xl font-bold text-white">{formatCurrency(budget.total)}</div>
-                <div className="flex items-center gap-3">
-                  <StatusBadge 
-                    budget={budget} 
-                    onStatusChange={refreshBudgets}
-                  />
-                  <div className="flex gap-1">
+            <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-white/5">
+                <div className="text-base md:text-xl font-bold text-white shrink-0">{formatCurrency(budget.total)}</div>
+                <div className="flex items-center gap-1.5 md:gap-3">
+                  <div className="scale-90 md:scale-100 origin-right">
+                    <StatusBadge 
+                      budget={budget} 
+                      onStatusChange={refreshBudgets}
+                    />
+                  </div>
+                  <div className="flex gap-0 md:gap-1">
                     <Link 
                       to={`/view/${budget.id}`}
-                      className="p-2 hover:bg-brand-pink/10 text-text-secondary hover:text-brand-pink rounded-lg transition-all"
+                      className="p-1.5 md:p-2 hover:bg-brand-pink/10 text-text-secondary hover:text-brand-pink rounded-lg transition-all"
                       title="Visualizar"
                     >
-                      <ArrowUpRight size={18} />
+                      <ArrowUpRight size={16} className="md:w-[18px] md:h-[18px]" />
                     </Link>
                     <Link 
                       to={`/edit/${budget.id}`}
-                      className="p-2 hover:bg-white/5 text-text-secondary hover:text-white rounded-lg transition-all"
+                      className="p-1.5 md:p-2 hover:bg-white/5 text-text-secondary hover:text-white rounded-lg transition-all"
                       title="Editar"
                     >
-                      <Edit2 size={18} />
+                      <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </Link>
                     <button 
                       onClick={() => handleDeleteBudget(budget.id)}
-                      className="p-2 hover:bg-red-400/10 text-text-secondary hover:text-red-400 rounded-lg transition-all"
+                      className="p-1.5 md:p-2 hover:bg-red-400/10 text-text-secondary hover:text-red-400 rounded-lg transition-all"
                       title="Excluir"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </button>
                   </div>
                 </div>
