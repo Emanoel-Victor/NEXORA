@@ -52,13 +52,7 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      let message = err.message || "Erro ao entrar na conta. Verifique suas credenciais.";
-      
-      if (message.includes("rate limit exceeded")) {
-        message = "Muitas tentativas de login em pouco tempo. Por favor, aguarde alguns minutos antes de tentar novamente.";
-      }
-      
-      setError(message);
+      setError(err.message || "Erro ao entrar na conta. Verifique suas credenciais.");
     } finally {
       setLoading(false);
     }
