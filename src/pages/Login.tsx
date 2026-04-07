@@ -52,7 +52,17 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.message || "Erro ao entrar na conta. Verifique suas credenciais.");
+      let message = err.message || "Erro ao entrar na conta. Verifique suas credenciais.";
+      
+      if (message.includes("rate limit exceeded")) {
+        message = "Muitas tentativas de login em pouco tempo. Por favor, aguarde alguns minutos antes de tentar novamente.";
+      } else if (message.includes("Invalid login credentials")) {
+        message = "E-mail ou senha incorretos. Verifique seus dados e tente novamente.";
+      } else if (message.includes("Email not confirmed")) {
+        message = "Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada (e a pasta de spam) para ativar sua conta.";
+      }
+      
+      setError(message);
     } finally {
       setLoading(false);
     }

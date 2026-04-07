@@ -15,10 +15,13 @@ export default function Signup() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const [success, setSuccess] = useState(false);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
     try {
       const { data, error: authError } = await supabase.auth.signUp({
@@ -33,7 +36,14 @@ export default function Signup() {
 
       if (authError) throw authError;
 
-      if (data.user) {
+      if (data.user && !data.session) {
+        // Email confirmation is likely enabled
+        setSuccess(true);
+        return;
+      }
+
+      if (data.user && data.session) {
+        // ... (rest of the auto-login logic)
         // The profile is created by the Supabase trigger 'on_auth_user_created'
         // We wait a bit for the trigger to finish and then fetch the profile
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -62,7 +72,13 @@ export default function Signup() {
       }
     } catch (err: any) {
       console.error("Signup error:", err);
-      setError(err.message || "Erro ao criar conta. Tente novamente.");
+      let message = err.message || "Erro ao criar conta. Tente novamente.";
+      
+      if (message.includes("rate limit exceeded")) {
+        message = "Muitas tentativas de cadastro em pouco tempo. Por favor, aguarde alguns minutos antes de tentar novamente.";
+      }
+      
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -84,13 +100,32 @@ export default function Signup() {
         </div>
 
         <div className="glass-card p-8">
-          {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-sm">
-              <AlertCircle size={18} />
-              {error}
+          {success ? (
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto">
+                <Mail size={32} />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-bold">Verifique seu e-mail</h2>
+                <p className="text-text-secondary">
+                  Enviamos um link de confirmação para <strong>{email}</strong>. 
+                  Por favor, clique no link para ativar sua conta.
+                </p>
+              </div>
+              <Link to="/login" className="btn-primary w-full py-4 inline-flex items-center justify-center">
+                Ir para o Login
+              </Link>
             </div>
-          )}
-          <form onSubmit={handleSignup} className="space-y-5">
+          ) : (
+            <>
+              {error && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-sm">
+                  <AlertCircle size={18} />
+                  {error}
+                </div>
+              )}
+              <form onSubmit={handleSignup} className="space-y-5">
+                {/* ... (rest of the form) */}
             <div className="space-y-2">
               <label className="text-sm font-medium ml-1">Nome completo</label>
               <div className="relative group">
@@ -151,7 +186,9 @@ export default function Signup() {
               )}
             </button>
           </form>
-        </div>
+        </>
+      )}
+    </div>
 
         <p className="text-center mt-8 text-text-secondary">
           Já tem uma conta?{" "}

@@ -30,8 +30,10 @@ export default function UpgradeModal({ isOpen, onClose, featureName, targetPlan 
     const user = storage.getUser();
     if (!user) return;
 
-    const proUrl = import.meta.env.VITE_PERFECT_PAY_PRO_CHECKOUT_URL;
-    const premiumUrl = import.meta.env.VITE_PERFECT_PAY_PREMIUM_CHECKOUT_URL;
+    // Safely access environment variables
+    const env = (import.meta as any).env || {};
+    const proUrl = env.VITE_PERFECT_PAY_PRO_CHECKOUT_URL;
+    const premiumUrl = env.VITE_PERFECT_PAY_PREMIUM_CHECKOUT_URL;
 
     const checkoutUrl = planId === 'pro' ? proUrl : premiumUrl;
 
