@@ -62,7 +62,13 @@ export default function Signup() {
       }
     } catch (err: any) {
       console.error("Signup error:", err);
-      setError(err.message || "Erro ao criar conta. Tente novamente.");
+      let message = err.message || "Erro ao criar conta. Tente novamente.";
+      
+      if (message.includes("rate limit exceeded")) {
+        message = "Muitas tentativas de cadastro em pouco tempo. Por favor, aguarde alguns minutos antes de tentar novamente.";
+      }
+      
+      setError(message);
     } finally {
       setLoading(false);
     }
