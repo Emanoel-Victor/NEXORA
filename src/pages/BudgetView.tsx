@@ -280,7 +280,7 @@ export default function BudgetView() {
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error) {
       console.error("Erro detalhado ao gerar PDF:", error);
-      alert("Não foi possível gerar o PDF automaticamente devido a restrições do seu navegador ou tamanho do arquivo. \n\nSOLUÇÃO: Clique no ícone de folha (Imprimir) ao lado do botão de baixar e selecione 'Salvar como PDF'.");
+      alert("Não foi possível gerar o PDF automaticamente devido a restrições do seu navegador ou tamanho do arquivo. \n\nTente novamente ou use a função de imprimir do seu navegador (Ctrl+P) e selecione 'Salvar como PDF'.");
     } finally {
       setIsDownloading(false);
     }
@@ -345,13 +345,6 @@ export default function BudgetView() {
               title="Compartilhar Link"
             >
               {copied ? <CheckCircle2 size={18} className="text-green-400 md:w-5 md:h-5" /> : <Share2 size={18} className="md:w-5 md:h-5" />}
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="p-2 md:p-2.5 rounded-xl transition-all text-text-secondary bg-white/5 hover:text-white shrink-0"
-              title="Imprimir Orçamento"
-            >
-              <FileText size={18} className="md:w-5 md:h-5" />
             </button>
             <button
               onClick={downloadPDF}
